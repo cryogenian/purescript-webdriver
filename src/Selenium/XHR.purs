@@ -15,78 +15,99 @@ import Data.Foreign.NullOrUndefined (runNullOrUndefined)
 
 
 type XHRStats =
-  { method :: String
+  { method :: Method 
   , url :: String
   , async :: Boolean
   , user :: Maybe String
   , password :: Maybe String
   , state :: String
   } 
-
+-- | Start spy on xhrs. It defines global variable in browser
+-- | and put information about to it. 
 startSpying :: forall e. Driver -> Aff (selenium :: SELENIUM|e) Unit
 startSpying driver = void $ 
   executeStr driver """
 "use strict"
-
-var Selenium = {
-    log: [],
-    count: 0,
-    spy: function() {
-        var open = XMLHttpRequest.prototype.open;
-        window.XMLHttpRequest.prototype.open =
-            function(method, url, async, user, password) {
-                this.__id = Selenium.count;
-                Selenium.log[this.__id] = {
-                    method: method,
-                    url: url,
-                    async: async,
-                    user: user,
-                    password: password,
-                    state: "stale"
-                };
-                Selenium.count++;
-                open.apply(this, arguments);
-            };
-        
-        var send = XMLHttpRequest.prototype.send;
-        window.XMLHttpRequest.prototype.send =
-            function(data) {
-                if (Selenium.log[this.__id]) {
-                    Selenium.log[this.__id].state = "opened";
-                }
-                var m = this.onload;
-                this.onload = function() {
-                    if (Selenium.log[this.__id]) {
-                        Selenium.log[this.__id].state = "loaded";
-                    }
-                    if (typeof m == 'function') {
-                        m();
-                    }
-                };
-                send.apply(this, arguments);
-            };
-        var abort = window.XMLHttpRequest.prototype.abort;
-        window.XMLHttpRequest.prototype.abort = function() {
-            if (Selenium.log[this.__id]) {
-                Selenium.log[this.__id].state = "aborted";
-            }
-            abort.apply(this, arguments);
-        };
-        Selenium.unspy = function() {
-            window.XMLHttpRequest.send = send;
-            window.XMLHttpRequest.open = open;
-            window.XMLHttpRequest.abort = abort;
-        };
-    },
-    clean: function() {
-        this.log = [];
-        this.count = 0;
-    }
-};
-window.__SELENIUM__ = Selenium;
-Selenium.spy();
+// If we have activated spying
+if (window.__SELENIUM__) {
+  // and it stopped
+  if (!window.__SELENIUM__.isActive) {
+    window.__SELENIUM__.spy();
+  }
+} else {
+  var Selenium = {
+      isActive: false,
+      log: [],
+      count: 0,
+      spy: function() {
+          // monkey patch
+          var open = XMLHttpRequest.prototype.open;
+          window.XMLHttpRequest.prototype.open =
+              function(method, url, async, user, password) {
+                  // we need this mark to update log after
+                  // request is finished
+                  this.__id = Selenium.count;
+                  Selenium.log[this.__id] = {
+                      method: method,
+                      url: url,
+                      async: async,
+                      user: user,
+                      password: password,
+                      state: "stale"
+                  };
+                  Selenium.count++;
+                  open.apply(this, arguments);
+              };
+          // another monkey patch
+          var send = XMLHttpRequest.prototype.send;
+          window.XMLHttpRequest.prototype.send =
+              function(data) {
+                  // this request can be deleted (this.clean() i.e.) 
+                  if (Selenium.log[this.__id]) {
+                      Selenium.log[this.__id].state = "opened";
+                  }
+                  // monkey pathc `onload` (I suppose it's useless to fire xhr
+                  // without `onload` handler, but to be sure there is check for
+                  // type of current value 
+                  var m = this.onload;
+                  this.onload = function() {
+                      if (Selenium.log[this.__id]) {
+                          Selenium.log[this.__id].state = "loaded";
+                      }
+                      if (typeof m == 'function') {
+                          m();
+                      }
+                  };
+                  send.apply(this, arguments);
+              };
+          // monkey patch `abort`          
+          var abort = window.XMLHttpRequest.prototype.abort;
+          window.XMLHttpRequest.prototype.abort = function() {
+              if (Selenium.log[this.__id]) {
+                  Selenium.log[this.__id].state = "aborted";
+              }
+              abort.apply(this, arguments);
+          };
+          this.isActive = true;
+          // if we define it here we need not to make `send` global 
+          Selenium.unspy = function() {
+              this.active = false;
+              window.XMLHttpRequest.send = send;
+              window.XMLHttpRequest.open = open;
+              window.XMLHttpRequest.abort = abort;
+          };
+      },
+      // just clean log
+      clean: function() {
+          this.log = [];
+      }
+  };
+  window.__SELENIUM__ = Selenium;
+  Selenium.spy();
+}
 """
 
+-- | Return xhr's method to initial. Will not raise an error if hasn't been initiated
 stopSpying :: forall e. Driver -> Aff (selenium :: SELENIUM|e) Unit
 stopSpying driver = void $ executeStr driver """
 if (window.__SELENIUM__) {
@@ -94,6 +115,7 @@ if (window.__SELENIUM__) {
 }
 """
 
+-- | Clean log. Will raise an error if spying hasn't been initiated
 clearLog :: forall e. Driver -> Aff (selenium :: SELENIUM|e) Unit 
 clearLog driver = do 
   success <- executeStr driver """
@@ -109,6 +131,7 @@ clearLog driver = do
     Right true -> pure unit
     _ -> throwError $ error "spying is inactive"
 
+-- | Get recorded xhr stats. If spying has not been setted will raise an error
 getStats :: forall e. Driver -> Aff (selenium :: SELENIUM|e) (Array XHRStats)
 getStats driver = do 
   log <- executeStr driver """
