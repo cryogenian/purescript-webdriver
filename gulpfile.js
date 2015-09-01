@@ -49,7 +49,8 @@ gulp.task("docs", function() {
             "Selenium.ScrollBehaviour": "docs/Selenium/ScrollBehaviour.md",
             "Selenium.Types": "docs/Selenium/Types.md",
             "Selenium.Monad": "docs/Selenium/Monad.md",
-            "Selenium.Combinators": "docs/Selenium/Combinators.md"
+            "Selenium.Combinators": "docs/Selenium/Combinators.md",
+            "Selenium.XHR": "docs/Selenium/XHR.md"
         }
     });
 });
