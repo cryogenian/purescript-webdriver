@@ -270,4 +270,28 @@ childExact :: forall e o. Element -> Locator -> Selenium e o Element
 
 Tries to find child, if has no success throws an error
 
+#### `startSpying`
+
+``` purescript
+startSpying :: forall e o. Selenium e o Unit
+```
+
+#### `stopSpying`
+
+``` purescript
+stopSpying :: forall e o. Selenium e o Unit
+```
+
+#### `clearLog`
+
+``` purescript
+clearLog :: forall e o. Selenium e o Unit
+```
+
+#### `getXHRStats`
+
+``` purescript
+getXHRStats :: forall e o. Selenium e o (List XHRStats)
+```
+
 

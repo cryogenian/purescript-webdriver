@@ -1,11 +1,5 @@
 ## Module Selenium.XHR
 
-#### `XHRStats`
-
-``` purescript
-type XHRStats = { method :: Method, url :: String, async :: Boolean, user :: Maybe String, password :: Maybe String, state :: String }
-```
-
 #### `startSpying`
 
 ``` purescript

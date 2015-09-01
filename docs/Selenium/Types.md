@@ -151,4 +151,10 @@ newtype ControlKey
   = ControlKey String
 ```
 
+#### `XHRStats`
+
+``` purescript
+type XHRStats = { method :: Method, url :: String, async :: Boolean, user :: Maybe String, password :: Maybe String, state :: String }
+```
+
 

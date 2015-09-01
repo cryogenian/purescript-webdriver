@@ -4,6 +4,7 @@ import Prelude
 import Data.Foreign.Class (IsForeign)
 import Data.Foreign (readString)
 import Data.String (toLower)
+import Data.Maybe (Maybe())
 
 foreign import data Builder :: *
 foreign import data SELENIUM :: !
@@ -63,3 +64,13 @@ type Location =
   }
 
 newtype ControlKey = ControlKey String
+
+
+type XHRStats =
+  { method :: Method 
+  , url :: String
+  , async :: Boolean
+  , user :: Maybe String
+  , password :: Maybe String
+  , state :: String
+  } 

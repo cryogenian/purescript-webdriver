@@ -20,6 +20,7 @@ import Control.Monad.Reader.Class
 import qualified Control.Monad.Aff as A
 import qualified Selenium as S
 import qualified Selenium.ActionSequence as S
+import qualified Selenium.XHR as S 
 -- | `Driver` is field of `ReaderT` context
 -- | Usually selenium tests are run with tons of configs (i.e. xpath locators,
 -- | timeouts) all those configs can be putted to `Selenium e o a`
@@ -177,3 +178,15 @@ findExact loc = getDriver >>= flip S.findExact loc >>> lift
 -- | Tries to find child, if has no success throws an error
 childExact :: forall e o. Element -> Locator -> Selenium e o Element
 childExact el loc = lift $ S.childExact el loc 
+
+startSpying :: forall e o. Selenium e o Unit
+startSpying = getDriver >>= S.startSpying >>> lift 
+
+stopSpying :: forall e o. Selenium e o Unit
+stopSpying = getDriver >>= S.stopSpying >>> lift
+
+clearLog :: forall e o. Selenium e o Unit
+clearLog = getDriver >>= S.clearLog >>> lift
+
+getXHRStats :: forall e o. Selenium e o (List XHRStats)
+getXHRStats = getDriver >>= S.getStats >>> map toList >>> lift

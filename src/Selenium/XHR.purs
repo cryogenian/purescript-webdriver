@@ -1,7 +1,6 @@
 module Selenium.XHR where
 
 import Prelude
-import Data.Maybe (Maybe())
 import Data.Either (either, Either(..))
 import Data.Traversable (for)
 import Selenium (executeStr)
@@ -13,15 +12,6 @@ import Data.Foreign (readBoolean, isUndefined, readArray)
 import Data.Foreign.Class (readProp)
 import Data.Foreign.NullOrUndefined (runNullOrUndefined)
 
-
-type XHRStats =
-  { method :: Method 
-  , url :: String
-  , async :: Boolean
-  , user :: Maybe String
-  , password :: Maybe String
-  , state :: String
-  } 
 -- | Start spy on xhrs. It defines global variable in browser
 -- | and put information about to it. 
 startSpying :: forall e. Driver -> Aff (selenium :: SELENIUM|e) Unit
