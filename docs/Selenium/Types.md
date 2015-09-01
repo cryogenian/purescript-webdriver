@@ -114,6 +114,30 @@ data Capabilities :: *
 data FileDetector :: *
 ```
 
+#### `Method`
+
+``` purescript
+data Method
+  = DELETE
+  | GET
+  | HEAD
+  | OPTIONS
+  | PATCH
+  | POST
+  | PUT
+  | MOVE
+  | COPY
+  | CustomMethod String
+```
+
+Copied from `purescript-affjax` because the only thing we
+need from `affjax` is `Method`                    
+
+##### Instances
+``` purescript
+instance methodIsForeign :: IsForeign Method
+```
+
 #### `Location`
 
 ``` purescript
