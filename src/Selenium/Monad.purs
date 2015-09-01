@@ -110,7 +110,7 @@ isDisplayed :: forall e o. Element -> Selenium e o Boolean
 isDisplayed = lift <<< S.isDisplayed
 
 isEnabled :: forall e o. Element -> Selenium e o Boolean
-isEnabled = lift <<< S.isDisplayed
+isEnabled = lift <<< S.isEnabled
 
 getCssValue :: forall e o. Element -> String -> Selenium e o String
 getCssValue el key = lift $ S.getCssValue el key

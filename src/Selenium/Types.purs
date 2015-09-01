@@ -2,8 +2,9 @@ module Selenium.Types where
 
 import Prelude
 import Data.Foreign.Class (IsForeign)
-import Data.Foreign (readString)
+import Data.Foreign (readString, ForeignError(..))
 import Data.String (toLower)
+import Data.Either (Either(..))
 import Data.Maybe (Maybe())
 
 foreign import data Builder :: *
@@ -40,6 +41,19 @@ data Method
   | COPY
   | CustomMethod String
 
+instance eqMethod :: Eq Method where
+  eq DELETE DELETE = true
+  eq GET GET = true
+  eq HEAD HEAD = true
+  eq OPTIONS OPTIONS = true
+  eq PATCH PATCH = true
+  eq POST POST = true
+  eq PUT PUT = true
+  eq MOVE MOVE = true
+  eq COPY COPY = true
+  eq (CustomMethod a) (CustomMethod b) = a == b
+  eq _ _ = false 
+  
 
 instance methodIsForeign :: IsForeign Method where
   read f = do
@@ -55,8 +69,28 @@ instance methodIsForeign :: IsForeign Method where
       "move" -> MOVE
       "copy" -> COPY
       a -> CustomMethod a 
-      
 
+data XHRState
+  = Stale
+  | Opened
+  | Loaded
+
+instance xhrStateEq :: Eq XHRState where
+  eq Stale Stale = true
+  eq Opened Opened = true
+  eq Loaded Loaded = true
+  eq _ _ = false
+
+instance xhrStateIsForeign :: IsForeign XHRState where
+  read f = do
+    str <- readString f
+    case str of
+      "stale" -> pure Stale
+      "opened" -> pure Opened
+      "loaded" -> pure Loaded 
+      _ -> Left $ TypeMismatch "xhr state" "string"
+
+    
 
 type Location =
   { x :: Number
@@ -72,5 +106,5 @@ type XHRStats =
   , async :: Boolean
   , user :: Maybe String
   , password :: Maybe String
-  , state :: String
+  , state :: XHRState
   } 
