@@ -25,7 +25,6 @@ foreign import data OperaOptions :: *
 foreign import data ProxyConfig :: *
 foreign import data SafariOptions :: *
 foreign import data ScrollBehaviour :: *
-foreign import data Capabilities :: *
 foreign import data FileDetector :: *
 
 -- | Copied from `purescript-affjax` because the only thing we

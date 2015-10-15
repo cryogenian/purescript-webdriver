@@ -1,7 +1,13 @@
-module Selenium.Browser where
+module Selenium.Browser
+       ( Browser(..)
+       , browser2str
+       , str2browser
+       , browserCapabilities
+       ) where
 
 import Prelude
-import Data.Maybe 
+import Data.Maybe
+import Selenium.Capabilities
 
 data Browser
   = PhantomJS
@@ -9,7 +15,7 @@ data Browser
   | FireFox
   | IE
   | Opera
-  | Safari 
+  | Safari
 
 
 browser2str :: Browser -> String
@@ -28,3 +34,8 @@ str2browser "ie" = pure IE
 str2browser "opera" = pure Opera
 str2browser "safari" = pure Safari
 str2browser _ = Nothing
+
+foreign import _browserCapabilities :: String -> Capabilities
+
+browserCapabilities :: Browser -> Capabilities
+browserCapabilities = browser2str >>> _browserCapabilities
